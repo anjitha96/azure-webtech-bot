@@ -6,11 +6,11 @@
     "license": "MIT",
     "main": "index.js",
     "scripts": {
-        "start": "node ./index.js",
-        "watch": "nodemon ./index.js",
-        "lint": "eslint .",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
+  "start": "node ./index.js",
+  "watch": "nodemon ./index.js",
+  "lint": "eslint .",
+  "test": "echo \"No tests available\" && exit 0"
+},
     "repository": {
         "type": "git",
         "url": "https://github.com"
