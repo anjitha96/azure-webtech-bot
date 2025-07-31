@@ -10,7 +10,7 @@
   "watch": "nodemon ./index.js",
   "lint": "eslint .",
   "test": "echo \"No tests available\" && exit 0"
-},
+   },
     "repository": {
         "type": "git",
         "url": "https://github.com"
