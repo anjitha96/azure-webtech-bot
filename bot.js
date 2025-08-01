@@ -8,21 +8,11 @@ const { ActivityHandler, MessageFactory } = require('botbuilder');
 class EchoBot extends ActivityHandler {
     constructor() {
         super();
-
+        // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
         this.onMessage(async (context, next) => {
-            const text = context.activity.text.toLowerCase();
-
-            let reply = "I'm not sure I understand.";
-
-            if (text.includes('hello') || text.includes('hi')) {
-                reply = 'Hello! How can I help you today?';
-            } else if (text.includes('price')) {
-                reply = 'Our pricing depends on the service. Please visit the pricing page.';
-            } else if (text.includes('support')) {
-                reply = 'You can reach our support at support@example.com.';
-            }
-
-            await context.sendActivity(MessageFactory.text(reply, reply));
+            const replyText = Echo: ${ context.activity.text };
+            await context.sendActivity(MessageFactory.text(replyText, replyText));
+            // By calling next() you ensure that the next BotHandler is run.
             await next();
         });
 
@@ -34,9 +24,10 @@ class EchoBot extends ActivityHandler {
                     await context.sendActivity(MessageFactory.text(welcomeText, welcomeText));
                 }
             }
+            // By calling next() you ensure that the next BotHandler is run.
             await next();
         });
     }
 }
 
-module.exports.EchoBot = EchoBot;
+module.exports.EchoBot = EchoBot; 
