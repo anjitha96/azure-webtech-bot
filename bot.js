@@ -8,26 +8,32 @@ const { ActivityHandler, MessageFactory } = require('botbuilder');
 class EchoBot extends ActivityHandler {
     constructor() {
         super();
-        // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
+
         this.onMessage(async (context, next) => {
-            const replyText = Echo: ${ context.activity.text };
-            await context.sendActivity(MessageFactory.text(replyText, replyText));
-            // By calling next() you ensure that the next BotHandler is run.
+            const userMessage = context.activity.text.toLowerCase();
+
+            if (userMessage.includes("hello")) {
+                await context.sendActivity("Hi there! How can I help you today?");
+            } else if (userMessage.includes("help")) {
+                await context.sendActivity("Sure! I can assist you with billing, support, or general inquiries.");
+            } else {
+                await context.sendActivity("Sorry, I didn’t understand that. Can you rephrase?");
+            }
+
             await next();
         });
 
         this.onMembersAdded(async (context, next) => {
-            const membersAdded = context.activity.membersAdded ?? [];
             const welcomeText = 'Hello and welcome!';
-            for (let cnt = 0; cnt < membersAdded.length; ++cnt) {
-                if (membersAdded[cnt].id !== context.activity.recipient.id) {
+            const membersAdded = context.activity.membersAdded ?? [];
+            for (let i = 0; i < membersAdded.length; ++i) {
+                if (membersAdded[i].id !== context.activity.recipient.id) {
                     await context.sendActivity(MessageFactory.text(welcomeText, welcomeText));
                 }
             }
-            // By calling next() you ensure that the next BotHandler is run.
             await next();
         });
     }
 }
 
-module.exports.EchoBot = EchoBot; 
+module.exports.EchoBot = EchoBot;
