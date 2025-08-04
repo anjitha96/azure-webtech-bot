@@ -1,24 +1,34 @@
-const axios = require('axios');
+const axios = require("axios");
 
 this.onMessage(async (context, next) => {
-  const userInput = context.activity.text;
+    const userInput = context.activity.text;
 
-  // Call Azure OpenAI
-  const response = await axios.post(
-    'https://<your-resource-name>.openai.azure.com/openai/deployments/<your-deployment-id>/chat/completions?api-version=2024-02-15-preview',
-    {
-      messages: [{ role: 'user', content: userInput }],
-      temperature: 0.7
-    },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': '<your-api-key>'
-      }
+    const endpoint = "https://web-ai-bot.openai.azure.com/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview";
+    const apiKey = "7ioim5GAzOx4d1yeFVFDaLaPvhP3ub0QNjmHGVYuw9TDKe4gPrYLJQQJ99BHACYeBjFXJ3w3AAABACOGa6bJ";
+
+    try {
+        const response = await axios.post(endpoint,
+            {
+                messages: [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: userInput }
+                ],
+                temperature: 0.7
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "api-key": apiKey
+                }
+            }
+        );
+
+        const botReply = response.data.choices[0].message.content;
+        await context.sendActivity(botReply);
+    } catch (error) {
+        console.error("Error from Azure OpenAI:", error.response?.data || error.message);
+        await context.sendActivity("Sorry, something went wrong with AI.");
     }
-  );
 
-  const reply = response.data.choices[0].message.content;
-  await context.sendActivity(reply);
-  await next();
+    await next();
 });
