@@ -1,40 +1,24 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+const axios = require('axios');
 
-// @ts-check
+this.onMessage(async (context, next) => {
+  const userInput = context.activity.text;
 
-const { ActivityHandler, MessageFactory } = require('botbuilder');
-
-class EchoBot extends ActivityHandler {
-    constructor() {
-        super();
-
-        this.onMessage(async (context, next) => {
-            const userMessage = context.activity.text.toLowerCase();
-
-            if (userMessage.includes("hello")) {
-                await context.sendActivity("Hi there! How can I help you today?");
-            } else if (userMessage.includes("help")) {
-                await context.sendActivity("Sure! I can assist you with billing, support, or general inquiries.");
-            } else {
-                await context.sendActivity("Sorry, I didn’t understand that. Can you rephrase?");
-            }
-
-            await next();
-        });
-
-        this.onMembersAdded(async (context, next) => {
-            const welcomeText = 'Hello and welcome!';
-            const membersAdded = context.activity.membersAdded ?? [];
-            for (let i = 0; i < membersAdded.length; ++i) {
-                if (membersAdded[i].id !== context.activity.recipient.id) {
-                    await context.sendActivity(MessageFactory.text(welcomeText, welcomeText));
-                }
-            }
-            await next();
-        });
+  // Call Azure OpenAI
+  const response = await axios.post(
+    'https://<your-resource-name>.openai.azure.com/openai/deployments/<your-deployment-id>/chat/completions?api-version=2024-02-15-preview',
+    {
+      messages: [{ role: 'user', content: userInput }],
+      temperature: 0.7
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': '<your-api-key>'
+      }
     }
-}
+  );
 
-module.exports.EchoBot = EchoBot;
-
+  const reply = response.data.choices[0].message.content;
+  await context.sendActivity(reply);
+  await next();
+});
