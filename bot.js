@@ -1,35 +1,38 @@
-const { ActivityHandler } = require('botbuilder');
+const { ActivityHandler, MessageFactory } = require('botbuilder');
 const axios = require('axios');
+require('dotenv').config();
 
-const API_KEY = process.env.AZURE_OPENAI_KEY;
-const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT; // ends with '/openai/deployments/<deployment>/chat/completions?api-version=2023-07-01-preview'
-const DEPLOYMENT = process.env.AZURE_OPENAI_DEPLOYMENT;
-
-class EchoBot extends ActivityHandler {
+class MyBot extends ActivityHandler {
     constructor() {
         super();
+
         this.onMessage(async (context, next) => {
             const userMessage = context.activity.text;
 
-            const headers = {
-                'Content-Type': 'application/json',
-                'api-key': API_KEY,
-            };
-
-            const azureOpenAIEndpoint = `${ENDPOINT}/openai/deployments/${DEPLOYMENT}/chat/completions?api-version=2023-07-01-preview`;
-
-            const data = {
-                messages: [{ role: 'user', content: userMessage }],
-                max_tokens: 1000,
-            };
-
             try {
-                const response = await axios.post(azureOpenAIEndpoint, data, { headers });
-                const reply = response.data.choices[0].message.content;
-                await context.sendActivity(reply);
+                // Azure OpenAI Chat Completions API request
+                const response = await axios.post(
+                    `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=2023-07-01-preview`,
+                    {
+                        messages: [
+                            { role: 'system', content: 'You are a helpful AI assistant.' },
+                            { role: 'user', content: userMessage }
+                        ]
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api-key': process.env.AZURE_OPENAI_API_KEY
+                        }
+                    }
+                );
+
+                const aiResponse = response.data.choices[0].message.content;
+
+                await context.sendActivity(MessageFactory.text(aiResponse));
             } catch (error) {
-                console.error('Azure OpenAI error:', error.response?.data || error.message);
-                await context.sendActivity('Sorry, something went wrong with the AI response.');
+                console.error('Error communicating with Azure OpenAI:', error.response?.data || error.message);
+                await context.sendActivity("Sorry, something went wrong with the AI response.");
             }
 
             await next();
@@ -39,7 +42,7 @@ class EchoBot extends ActivityHandler {
             const welcomeText = 'Hello! I’m your Azure AI chatbot.';
             for (const member of context.activity.membersAdded) {
                 if (member.id !== context.activity.recipient.id) {
-                    await context.sendActivity(welcomeText);
+                    await context.sendActivity(MessageFactory.text(welcomeText));
                 }
             }
             await next();
@@ -47,4 +50,4 @@ class EchoBot extends ActivityHandler {
     }
 }
 
-module.exports.EchoBot = EchoBot;
+module.exports.MyBot = MyBot;
