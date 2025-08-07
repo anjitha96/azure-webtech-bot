@@ -1,45 +1,34 @@
-const { ActivityHandler } = require('botbuilder');
-const axios = require('axios');
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-const API_KEY = process.env.AZURE_OPENAI_KEY;
-const ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT; // ends with '/openai/deployments/<deployment>/chat/completions?api-version=2023-07-01-preview'
-const DEPLOYMENT = process.env.AZURE_OPENAI_DEPLOYMENT;
+// @ts-check
+
+const { ActivityHandler, MessageFactory } = require('botbuilder');
 
 class EchoBot extends ActivityHandler {
     constructor() {
         super();
+
         this.onMessage(async (context, next) => {
-            const userMessage = context.activity.text;
+            const userMessage = context.activity.text.toLowerCase();
 
-            const headers = {
-                'Content-Type': 'application/json',
-                'api-key': API_KEY,
-            };
-
-            const azureOpenAIEndpoint = `${ENDPOINT}/openai/deployments/${DEPLOYMENT}/chat/completions?api-version=2023-07-01-preview`;
-
-            const data = {
-                messages: [{ role: 'user', content: userMessage }],
-                max_tokens: 1000,
-            };
-
-            try {
-                const response = await axios.post(azureOpenAIEndpoint, data, { headers });
-                const reply = response.data.choices[0].message.content;
-                await context.sendActivity(reply);
-            } catch (error) {
-                console.error('Azure OpenAI error:', error.response?.data || error.message);
-                await context.sendActivity('Sorry, something went wrong with the AI response.');
+            if (userMessage.includes("hello")) {
+                await context.sendActivity("Hi there! How can I help you today?");
+            } else if (userMessage.includes("help")) {
+                await context.sendActivity("Sure! I can assist you with billing, support, or general inquiries.");
+            } else {
+                await context.sendActivity("Sorry, I didn’t understand that. Can you rephrase?");
             }
 
             await next();
         });
 
         this.onMembersAdded(async (context, next) => {
-            const welcomeText = 'Hello! I’m your Azure AI chatbot.';
-            for (const member of context.activity.membersAdded) {
-                if (member.id !== context.activity.recipient.id) {
-                    await context.sendActivity(welcomeText);
+            const welcomeText = 'Hello and welcome!';
+            const membersAdded = context.activity.membersAdded ?? [];
+            for (let i = 0; i < membersAdded.length; ++i) {
+                if (membersAdded[i].id !== context.activity.recipient.id) {
+                    await context.sendActivity(MessageFactory.text(welcomeText, welcomeText));
                 }
             }
             await next();
